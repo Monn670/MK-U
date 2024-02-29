@@ -1,0 +1,32 @@
+# Please work
+
+import csv
+from geopy.geocoders import Nominatim
+import plotly as px
+
+# Function to geolocate an IP address
+def geolocate_ip(ip_address):
+    geolocator = Nominatim(user_agent="geoapiExercises")
+    location = geolocator.geocode(f"IP Address: {ip_address}")
+    if location:
+        return (location.latitude, location.longitude)
+    else:
+        return None
+
+# Parse the CSV file and geolocate IP addresses
+ip_addresses = []
+with open("Heatmap_ip_addresses.csv", "r") as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)  # Skip the header row
+    for row in reader:
+        ip_address = row[0]
+        coordinates = geolocate_ip(ip_address)
+        if coordinates:
+            ip_addresses.append(coordinates)
+
+# Create the world heatmap
+fig = px.density_mapbox("", lat=list(map(lambda x: x[0], ip_addresses)),
+                        lon=list(map(lambda x: x[1], ip_addresses)),
+                        geo_scope="world")
+fig.update_layout(mapbox_style="open-street-map")
+fig.show()
